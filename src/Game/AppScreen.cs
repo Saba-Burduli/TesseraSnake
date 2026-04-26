@@ -5,5 +5,6 @@ internal enum AppScreen
     MainMenu,
     Playing,
     Options,
+    Leaderboard,
     About
 }

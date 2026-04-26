@@ -18,16 +18,18 @@ internal sealed class OptionsMenu : Control
 
     public DifficultyLevel SelectedDifficulty => _difficulties[Math.Clamp(SelectedIndex, 0, _difficulties.Length - 1)];
 
-    public bool IsBackSelected => SelectedIndex == _difficulties.Length;
+    public bool IsLeaderboardSelected => SelectedIndex == _difficulties.Length;
+
+    public bool IsBackSelected => SelectedIndex == _difficulties.Length + 1;
 
     public void MovePrevious()
     {
-        SelectedIndex = (SelectedIndex - 1 + _difficulties.Length + 1) % (_difficulties.Length + 1);
+        SelectedIndex = (SelectedIndex - 1 + _difficulties.Length + 2) % (_difficulties.Length + 2);
     }
 
     public void MoveNext()
     {
-        SelectedIndex = (SelectedIndex + 1) % (_difficulties.Length + 1);
+        SelectedIndex = (SelectedIndex + 1) % (_difficulties.Length + 2);
     }
 
     public void SelectDifficulty(DifficultyLevel difficulty)
@@ -65,7 +67,8 @@ internal sealed class OptionsMenu : Control
             DrawOption(canvas, content, startY + index * 2, index, text);
         }
 
-        DrawOption(canvas, content, startY + _difficulties.Length * 2 + 1, _difficulties.Length, "Back");
+        DrawOption(canvas, content, startY + _difficulties.Length * 2 + 1, _difficulties.Length, "Leaderboard");
+        DrawOption(canvas, content, startY + _difficulties.Length * 2 + 3, _difficulties.Length + 1, "Back");
 
         var hint = "Arrows/WASD select   Enter/Space apply";
         canvas.WriteText(content.X + Math.Max(0, (content.Width - hint.Length) / 2), content.Bottom - 2,

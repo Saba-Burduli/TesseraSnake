@@ -3,6 +3,7 @@ using Tessera.Controls;
 using Tessera.Layout;
 using Tessera.Styles;
 using TesseraSnake.Core.Entities;
+using TesseraSnake.Core.Leaderboard;
 using TesseraSnake.Game;
 using TesseraSnake.UI.Menu;
 
@@ -14,6 +15,7 @@ internal sealed class TerminalRenderer
     private readonly MainMenu _mainMenu;
     private readonly OptionsMenu _optionsMenu = new();
     private readonly AboutPage _aboutPage = new();
+    private readonly LeaderboardPage _leaderboardPage = new();
 
     private readonly Label _header = new()
     {
@@ -70,6 +72,11 @@ internal sealed class TerminalRenderer
     public Screen BuildAbout()
     {
         return _aboutPage.Build();
+    }
+
+    public Screen BuildLeaderboard(IReadOnlyList<ScoreEntry> entries)
+    {
+        return _leaderboardPage.Build(entries);
     }
 
     public Screen Build(SnakeGameState state, ScreenContext context, DifficultyLevel difficulty)
