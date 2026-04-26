@@ -7,11 +7,13 @@ namespace TesseraSnake.Game;
 
 internal sealed class GameLoop : TesseraApp
 {
-    private static readonly TimeSpan TickInterval = TimeSpan.FromMilliseconds(110);
+    private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromMilliseconds(35);
 
     private readonly SnakeGameState _state = new();
     private readonly MainMenu _mainMenu = new();
     private readonly TerminalRenderer _renderer;
+    private DateTimeOffset? _lastStep;
+    private DifficultyLevel _difficulty = DifficultyLevel.Medium;
     private AppScreen _screen = AppScreen.MainMenu;
 
     public GameLoop()
@@ -21,14 +23,14 @@ internal sealed class GameLoop : TesseraApp
 
     public override TesseraEffect? Initialize()
     {
-        return TesseraEffects.Periodic(TickInterval, _ => new GameTick());
+        return TesseraEffects.Periodic(HeartbeatInterval, now => new GameTick(now));
     }
 
     public override TesseraEffect? Update(Message message)
     {
         return message switch
         {
-            GameTick => UpdateGame(),
+            GameTick tick => UpdateGame(tick),
             KeyPressed key => HandleKey(key),
             _ => null
         };
@@ -41,7 +43,7 @@ internal sealed class GameLoop : TesseraApp
             AppScreen.MainMenu => _renderer.BuildMainMenu(),
             AppScreen.Options => _renderer.BuildOptions(),
             AppScreen.About => _renderer.BuildAbout(),
-            _ => _renderer.Build(_state, context)
+            _ => _renderer.Build(_state, context, _difficulty)
         };
     }
 
@@ -54,16 +56,23 @@ internal sealed class GameLoop : TesseraApp
         var menu = new MainMenu();
         menu.MoveNext();
         _ = new TerminalRenderer(menu).BuildMainMenu();
-        _ = new TerminalRenderer(menu).Build(state, new ScreenContext { Width = 80, Height = 30 });
+        _ = new TerminalRenderer(menu).Build(state, new ScreenContext { Width = 80, Height = 30 },
+            DifficultyLevel.Medium);
     }
 
-    private TesseraEffect? UpdateGame()
+    private TesseraEffect? UpdateGame(GameTick tick)
     {
         if (_screen != AppScreen.Playing)
         {
             return null;
         }
 
+        if (_lastStep is { } last && tick.At - last < DifficultySettings.TickInterval(_difficulty))
+        {
+            return null;
+        }
+
+        _lastStep = tick.At;
         _state.Tick();
         return null;
     }
@@ -73,7 +82,8 @@ internal sealed class GameLoop : TesseraApp
         return _screen switch
         {
             AppScreen.MainMenu => HandleMainMenuKey(key),
-            AppScreen.Options or AppScreen.About => HandlePageKey(key),
+            AppScreen.Options => HandleOptionsKey(key),
+            AppScreen.About => HandlePageKey(key),
             _ => HandleGameKey(key)
         };
     }
@@ -111,9 +121,11 @@ internal sealed class GameLoop : TesseraApp
         {
             case "Start Game":
                 _state.Reset();
+                _lastStep = null;
                 _screen = AppScreen.Playing;
                 return null;
             case "Options":
+                _renderer.OptionsMenu.SelectDifficulty(_difficulty);
                 _screen = AppScreen.Options;
                 return null;
             case "About Developer":
@@ -136,6 +148,42 @@ internal sealed class GameLoop : TesseraApp
         return null;
     }
 
+    private TesseraEffect? HandleOptionsKey(KeyPressed key)
+    {
+        if (key.Is(Key.Escape) || key.IsCharacter('b') || key.IsCharacter('q', ModifierKeys.Ctrl))
+        {
+            _screen = AppScreen.MainMenu;
+            return null;
+        }
+
+        var options = _renderer.OptionsMenu;
+        if (key.Is(Key.Up) || key.IsCharacter('w'))
+        {
+            options.MovePrevious();
+            return null;
+        }
+
+        if (key.Is(Key.Down) || key.IsCharacter('s'))
+        {
+            options.MoveNext();
+            return null;
+        }
+
+        if (key.Is(Key.Enter) || key.IsCharacter(' '))
+        {
+            if (options.IsBackSelected)
+            {
+                _screen = AppScreen.MainMenu;
+                return null;
+            }
+
+            _difficulty = options.SelectedDifficulty;
+            return null;
+        }
+
+        return null;
+    }
+
     private TesseraEffect? HandleGameKey(KeyPressed key)
     {
         var input = InputHandler.Read(key);
@@ -148,6 +196,7 @@ internal sealed class GameLoop : TesseraApp
                 if (_state.IsGameOver)
                 {
                     _state.Reset();
+                    _lastStep = null;
                 }
 
                 return null;
@@ -159,5 +208,5 @@ internal sealed class GameLoop : TesseraApp
         }
     }
 
-    private sealed record GameTick : Message;
+    private sealed record GameTick(DateTimeOffset At) : Message;
 }

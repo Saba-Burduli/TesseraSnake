@@ -3,6 +3,7 @@ using Tessera.Controls;
 using Tessera.Layout;
 using Tessera.Styles;
 using TesseraSnake.Core.Entities;
+using TesseraSnake.Game;
 using TesseraSnake.UI.Menu;
 
 namespace TesseraSnake.UI;
@@ -55,9 +56,15 @@ internal sealed class TerminalRenderer
         });
     }
 
+    public OptionsMenu OptionsMenu => _optionsMenu;
+
     public Screen BuildOptions()
     {
-        return _optionsMenu.Build();
+        return Screen.Build(window =>
+        {
+            window.Padding(1);
+            window.Body(body => body.Center(_optionsMenu, 58, 18));
+        });
     }
 
     public Screen BuildAbout()
@@ -65,13 +72,13 @@ internal sealed class TerminalRenderer
         return _aboutPage.Build();
     }
 
-    public Screen Build(SnakeGameState state, ScreenContext context)
+    public Screen Build(SnakeGameState state, ScreenContext context, DifficultyLevel difficulty)
     {
         _board.State = state;
         _header.Text = "TESSERA SNAKE";
         _help.Text = "Move: arrows / WASD\nRestart: Space / Enter\nQuit: Ctrl+Q\n\nFood grows the snake.\nWalls and self hits end the run.";
-        _stats.Text = $"Score       {state.Score:D3}\nLength      {state.Snake.Count:D3}\nDirection   {state.CurrentDirection}\nBoard       {state.Width} x {state.Height}";
-        _status.LeftText = $" Score {state.Score:D3}   Length {state.Snake.Count:D3} ";
+        _stats.Text = $"Score       {state.Score:D3}\nLength      {state.Snake.Count:D3}\nDifficulty  {difficulty}\nDirection   {state.CurrentDirection}\nBoard       {state.Width} x {state.Height}";
+        _status.LeftText = $" Score {state.Score:D3}   Length {state.Snake.Count:D3}   Difficulty {difficulty} ";
         _status.RightText = StatusText(state);
         _status.LeftTextStyle = SnakeTheme.StatusLeft;
         _status.RightTextStyle = SnakeTheme.StatusRight;
