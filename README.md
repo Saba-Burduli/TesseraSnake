@@ -14,6 +14,12 @@ dotnet build
 dotnet run
 ```
 
+## Verify
+
+```powershell
+dotnet run -- --self-test
+```
+
 ## Controls
 
 - Arrow keys or WASD: move
