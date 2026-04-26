@@ -17,12 +17,20 @@ internal sealed class AboutPage
 
     public Screen Build()
     {
-        _content.Text = "Tessera Snake\nBuilt with C# and Tessera.\n\nDeveloper page content will be expanded in its feature slice.\n\nPress Escape or B to return.";
+        _content.Text =
+            "Developer       Saba Burduli\n" +
+            "Project         Tessera Snake\n" +
+            "Stack           C# / .NET 10 / Tessera\n" +
+            "Repository      Saba-Burduli/tessera-snake\n\n" +
+            "This project is a real-time terminal Snake game built around Tessera's app model,\n" +
+            "periodic effects, keyboard messages, custom controls, themed rendering, and\n" +
+            "alternate-screen terminal output.\n\n" +
+            "Press Escape or B to return.";
 
         return Screen.Build(window =>
         {
             window.Padding(1);
-            window.Body(body => body.Center(_content, 64, 11));
+            window.Body(body => body.Center(_content, 82, 15));
         });
     }
 }
