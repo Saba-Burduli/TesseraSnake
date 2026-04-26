@@ -3,12 +3,16 @@ using Tessera.Controls;
 using Tessera.Layout;
 using Tessera.Styles;
 using TesseraSnake.Core.Entities;
+using TesseraSnake.UI.Menu;
 
 namespace TesseraSnake.UI;
 
 internal sealed class TerminalRenderer
 {
     private readonly SnakeBoardControl _board = new();
+    private readonly MainMenu _mainMenu;
+    private readonly OptionsMenu _optionsMenu = new();
+    private readonly AboutPage _aboutPage = new();
 
     private readonly Label _header = new()
     {
@@ -36,6 +40,30 @@ internal sealed class TerminalRenderer
     };
 
     private readonly StatusBar _status = new() { Fill = ' ' };
+
+    public TerminalRenderer(MainMenu mainMenu)
+    {
+        _mainMenu = mainMenu;
+    }
+
+    public Screen BuildMainMenu()
+    {
+        return Screen.Build(window =>
+        {
+            window.Padding(1);
+            window.Body(body => body.Center(_mainMenu, 58, 18));
+        });
+    }
+
+    public Screen BuildOptions()
+    {
+        return _optionsMenu.Build();
+    }
+
+    public Screen BuildAbout()
+    {
+        return _aboutPage.Build();
+    }
 
     public Screen Build(SnakeGameState state, ScreenContext context)
     {

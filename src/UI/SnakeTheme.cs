@@ -7,6 +7,9 @@ internal static class SnakeTheme
     public static TesseraStyle Title => Foreground(0xA6E3A1).WithBold();
     public static TesseraStyle Border => Foreground(0x74C7EC);
     public static TesseraStyle PanelText => Foreground(0xCDD6F4);
+    public static TesseraStyle MenuItem => Foreground(0xCDD6F4);
+    public static TesseraStyle MenuSelected => Surface(0x11111B, 0xA6E3A1).WithBold();
+    public static TesseraStyle MenuHint => Foreground(0xBAC2DE).WithDim();
 
     public static TesseraStyle FieldEven => Surface(0x11111B, 0x181825);
     public static TesseraStyle FieldOdd => Surface(0x11111B, 0x1E1E2E);
