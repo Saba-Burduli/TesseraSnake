@@ -5,6 +5,7 @@ using Tessera.Styles;
 using TesseraSnake.Core.Entities;
 using TesseraSnake.Core.Leaderboard;
 using TesseraSnake.Game;
+using TesseraSnake.UI.HUD;
 using TesseraSnake.UI.Menu;
 
 namespace TesseraSnake.UI;
@@ -42,7 +43,7 @@ internal sealed class TerminalRenderer
         BorderStyleText = SnakeTheme.Border
     };
 
-    private readonly StatusBar _status = new() { Fill = ' ' };
+    private readonly HUD.MenuBar _menuBar = new();
 
     public TerminalRenderer(MainMenu mainMenu)
     {
@@ -79,17 +80,15 @@ internal sealed class TerminalRenderer
         return _leaderboardPage.Build(entries);
     }
 
-    public Screen Build(SnakeGameState state, ScreenContext context, DifficultyLevel difficulty)
+    public Screen Build(SnakeGameState state, ScreenContext context, DifficultyLevel difficulty, bool paused)
     {
         _board.State = state;
         _header.Text = "TESSERA SNAKE";
-        _help.Text = "Move: arrows / WASD\nRestart: Space / Enter\nQuit: Ctrl+Q\n\nFood grows the snake.\nWalls and self hits end the run.";
+        _help.Text = "Move: arrows / WASD\nPause: P\nRestart: Space / Enter\nMenu: Ctrl+Q\n\nFood grows the snake.\nWalls and self hits end the run.";
         _stats.Text = $"Score       {state.Score:D3}\nLength      {state.Snake.Count:D3}\nDifficulty  {difficulty}\nDirection   {state.CurrentDirection}\nBoard       {state.Width} x {state.Height}";
-        _status.LeftText = $" Score {state.Score:D3}   Length {state.Snake.Count:D3}   Difficulty {difficulty} ";
-        _status.RightText = StatusText(state);
-        _status.LeftTextStyle = SnakeTheme.StatusLeft;
-        _status.RightTextStyle = SnakeTheme.StatusRight;
-        _status.FillStyle = SnakeTheme.StatusFill;
+        _menuBar.Score = state.Score;
+        _menuBar.Difficulty = difficulty;
+        _menuBar.Status = ResolveStatus(state, paused);
 
         return Screen.Build(window =>
         {
@@ -106,22 +105,17 @@ internal sealed class TerminalRenderer
             }
 
             window.Body(body => body.Center(_board, state.Width * 2 + 4, state.Height + 4));
-            window.Footer(1, _status);
+            window.Footer(1, _menuBar);
         });
     }
 
-    private static string StatusText(SnakeGameState state)
+    private static GameStatus ResolveStatus(SnakeGameState state, bool paused)
     {
-        if (state.HasWon)
-        {
-            return "You filled the board. Space restarts | Ctrl+Q quits";
-        }
-
         if (state.IsGameOver)
         {
-            return "Game over. Space restarts | Ctrl+Q quits";
+            return GameStatus.GameOver;
         }
 
-        return "Arrows/WASD move | Ctrl+Q quits";
+        return paused ? GameStatus.Paused : GameStatus.Running;
     }
 }

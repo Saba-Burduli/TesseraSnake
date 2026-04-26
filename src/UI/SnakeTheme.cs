@@ -20,7 +20,10 @@ internal static class SnakeTheme
     public static TesseraStyle OverlayDetail => Surface(0x11111B, 0xF9E2AF).WithBold();
 
     public static TesseraStyle StatusLeft => Surface(0x11111B, 0xA6E3A1).WithBold();
+    public static TesseraStyle StatusMiddle => Surface(0x11111B, 0x74C7EC).WithBold();
     public static TesseraStyle StatusRight => Foreground(0xCDD6F4);
+    public static TesseraStyle StatusPaused => Surface(0x11111B, 0xF9E2AF).WithBold();
+    public static TesseraStyle StatusGameOver => Surface(0x11111B, 0xF38BA8).WithBold();
     public static TesseraStyle StatusFill => Background(0x181825);
 
     private static TesseraStyle Foreground(int color)

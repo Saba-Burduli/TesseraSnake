@@ -17,6 +17,7 @@ internal sealed class GameLoop : TesseraApp
     private DateTimeOffset? _lastStep;
     private DifficultyLevel _difficulty = DifficultyLevel.Medium;
     private bool _scoreRecordedForRun;
+    private bool _paused;
     private AppScreen _screen = AppScreen.MainMenu;
 
     public GameLoop() : this(new LeaderboardService())
@@ -52,7 +53,7 @@ internal sealed class GameLoop : TesseraApp
             AppScreen.Options => _renderer.BuildOptions(),
             AppScreen.Leaderboard => _renderer.BuildLeaderboard(_leaderboard.Entries),
             AppScreen.About => _renderer.BuildAbout(),
-            _ => _renderer.Build(_state, context, _difficulty)
+            _ => _renderer.Build(_state, context, _difficulty, _paused)
         };
     }
 
@@ -66,7 +67,7 @@ internal sealed class GameLoop : TesseraApp
         menu.MoveNext();
         _ = new TerminalRenderer(menu).BuildMainMenu();
         _ = new TerminalRenderer(menu).Build(state, new ScreenContext { Width = 80, Height = 30 },
-            DifficultyLevel.Medium);
+            DifficultyLevel.Medium, paused: false);
 
         var tempPath = Path.Combine(Path.GetTempPath(), $"tessera-snake-{Guid.NewGuid():N}.json");
         var leaderboard = new LeaderboardService(tempPath);
@@ -82,7 +83,7 @@ internal sealed class GameLoop : TesseraApp
 
     private TesseraEffect? UpdateGame(GameTick tick)
     {
-        if (_screen != AppScreen.Playing)
+        if (_screen != AppScreen.Playing || _paused)
         {
             return null;
         }
@@ -149,6 +150,7 @@ internal sealed class GameLoop : TesseraApp
                 _state.Reset();
                 _lastStep = null;
                 _scoreRecordedForRun = false;
+                _paused = false;
                 _screen = AppScreen.Playing;
                 return null;
             case "Options":
@@ -231,6 +233,15 @@ internal sealed class GameLoop : TesseraApp
                     _state.Reset();
                     _lastStep = null;
                     _scoreRecordedForRun = false;
+                    _paused = false;
+                }
+
+                return null;
+            case GameInputKind.Pause:
+                if (!_state.IsGameOver)
+                {
+                    _paused = !_paused;
+                    _lastStep = null;
                 }
 
                 return null;

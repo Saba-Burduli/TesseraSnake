@@ -17,6 +17,11 @@ internal static class InputHandler
             return GameInput.Restart();
         }
 
+        if (key.IsCharacter('p'))
+        {
+            return GameInput.Pause();
+        }
+
         if (key.Is(Key.Up) || key.IsCharacter('w'))
         {
             return GameInput.Move(Direction.Up);
@@ -59,6 +64,11 @@ internal readonly record struct GameInput(GameInputKind Kind, Direction? Directi
     {
         return new GameInput(GameInputKind.Quit);
     }
+
+    public static GameInput Pause()
+    {
+        return new GameInput(GameInputKind.Pause);
+    }
 }
 
 internal enum GameInputKind
@@ -66,5 +76,6 @@ internal enum GameInputKind
     None,
     Move,
     Restart,
+    Pause,
     Quit
 }
