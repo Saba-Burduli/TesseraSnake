@@ -4,6 +4,8 @@
 
 - Added the Tessera NuGet package.
 - Verified the project builds after dependency restore.
+- Documented the framework prerequisites: .NET 10 SDK and an ANSI/CSI-capable terminal.
+- Aligned the project root namespace with the `TesseraSnake` source namespace.
 
 ## Why it exists
 
@@ -12,9 +14,10 @@ Tessera provides the terminal UI app model, rendering, input messages, and perio
 ## Files changed
 
 - `tessera-snake.csproj`
+- `README.md`
 - `docs/feature-tessera-setup.md`
 
 ## Next improvements
 
-- Replace the default console program with a Tessera application shell.
-- Add real-time movement and rendering.
+- Add color styling after terminal capability behavior is verified.
+- Add higher-level gameplay documentation as new features land.
