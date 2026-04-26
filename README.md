@@ -49,6 +49,13 @@ dotnet run
 dotnet run -- --self-test
 ```
 
+## Deploy Locally
+
+```powershell
+dotnet publish -c Release -o .\deploy
+.\deploy\tessera-snake.exe
+```
+
 ## Controls
 
 - Arrow keys or WASD: move
