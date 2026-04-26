@@ -37,7 +37,7 @@ internal sealed class GameLoop : TesseraApp
         state.QueueDirection(Direction.Down);
         state.Tick();
 
-        _ = TerminalRenderer.RenderBoard(state);
+        _ = new TerminalRenderer().Build(state, new ScreenContext { Width = 80, Height = 30 });
     }
 
     private TesseraEffect? UpdateGame()

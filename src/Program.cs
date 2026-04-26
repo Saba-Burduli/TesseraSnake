@@ -1,4 +1,5 @@
 using Tessera;
+using Tessera.Styles;
 using TesseraSnake.Game;
 
 if (args.Contains("--self-test", StringComparer.OrdinalIgnoreCase))
@@ -13,11 +14,17 @@ var app = TesseraApplication.CreateBuilder()
     .ConfigureRuntime(static runtime =>
     {
         runtime.MaxFps = 60;
+        runtime.AdaptiveFramePacing = true;
+        runtime.Theme = TesseraThemes.Catppuccin(CatppuccinVariant.Mocha);
         runtime.Screen = new ScreenOptions
         {
             AltScreen = true,
             WindowTitle = "Tessera Snake",
-            EnableFocusReporting = true
+            EnableFocusReporting = true,
+            EnableSynchronizedUpdates = true,
+            ForegroundColor = "#CDD6F4",
+            BackgroundColor = "#11111B",
+            CursorColor = "#A6E3A1"
         };
     })
     .Build();
