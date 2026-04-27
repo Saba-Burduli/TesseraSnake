@@ -81,12 +81,23 @@ internal sealed class TerminalRenderer
         return _leaderboardPage.Build(entries);
     }
 
+    public void FocusWidgets()
+    {
+        _widgetShowcase.FocusFirst();
+    }
+
+    public WidgetPageAction HandleWidgetKey(KeyPressed key)
+    {
+        return _widgetShowcase.HandleKey(key);
+    }
+
     public Screen BuildWidgets(
+        ScreenContext context,
         SnakeGameState state,
         DifficultyLevel difficulty,
         IReadOnlyList<ScoreEntry> entries)
     {
-        return _widgetShowcase.Build(state, difficulty, entries);
+        return _widgetShowcase.Build(context, state, difficulty, entries);
     }
 
     public Screen Build(SnakeGameState state, ScreenContext context, DifficultyLevel difficulty, bool paused)

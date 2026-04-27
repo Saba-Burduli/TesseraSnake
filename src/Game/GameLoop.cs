@@ -52,7 +52,7 @@ internal sealed class GameLoop : TesseraApp
             AppScreen.MainMenu => _renderer.BuildMainMenu(),
             AppScreen.Options => _renderer.BuildOptions(),
             AppScreen.Leaderboard => _renderer.BuildLeaderboard(_leaderboard.Entries),
-            AppScreen.Widgets => _renderer.BuildWidgets(_state, _difficulty, _leaderboard.Entries),
+            AppScreen.Widgets => _renderer.BuildWidgets(context, _state, _difficulty, _leaderboard.Entries),
             AppScreen.About => _renderer.BuildAbout(),
             _ => _renderer.Build(_state, context, _difficulty, _paused)
         };
@@ -66,10 +66,17 @@ internal sealed class GameLoop : TesseraApp
 
         var menu = new MainMenu();
         menu.MoveNext();
-        _ = new TerminalRenderer(menu).BuildMainMenu();
-        _ = new TerminalRenderer(menu).Build(state, new ScreenContext { Width = 80, Height = 30 },
+        var renderer = new TerminalRenderer(menu);
+        _ = renderer.BuildMainMenu();
+        _ = renderer.Build(state, new ScreenContext { Width = 80, Height = 30 },
             DifficultyLevel.Medium, paused: false);
-        _ = new TerminalRenderer(menu).BuildWidgets(state, DifficultyLevel.Medium, []);
+        _ = renderer.BuildWidgets(new ScreenContext { Width = 100, Height = 32 }, state, DifficultyLevel.Medium, []);
+        renderer.FocusWidgets();
+        _ = renderer.HandleWidgetKey(new KeyPressed(Key.Tab));
+        if (renderer.HandleWidgetKey(new KeyPressed(Key.Enter)) != WidgetPageAction.StartGame)
+        {
+            throw new InvalidOperationException("Widget Start button routing failed.");
+        }
 
         var tempPath = Path.Combine(Path.GetTempPath(), $"tessera-snake-{Guid.NewGuid():N}.json");
         var leaderboard = new LeaderboardService(tempPath);
@@ -112,7 +119,8 @@ internal sealed class GameLoop : TesseraApp
         {
             AppScreen.MainMenu => HandleMainMenuKey(key),
             AppScreen.Options => HandleOptionsKey(key),
-            AppScreen.Leaderboard or AppScreen.Widgets or AppScreen.About => HandlePageKey(key),
+            AppScreen.Widgets => HandleWidgetKey(key),
+            AppScreen.Leaderboard or AppScreen.About => HandlePageKey(key),
             _ => HandleGameKey(key)
         };
     }
@@ -160,6 +168,7 @@ internal sealed class GameLoop : TesseraApp
                 _screen = AppScreen.Options;
                 return null;
             case "Tessera Widgets":
+                _renderer.FocusWidgets();
                 _screen = AppScreen.Widgets;
                 return null;
             case "About Developer":
@@ -180,6 +189,32 @@ internal sealed class GameLoop : TesseraApp
         }
 
         return null;
+    }
+
+    private TesseraEffect? HandleWidgetKey(KeyPressed key)
+    {
+        switch (_renderer.HandleWidgetKey(key))
+        {
+            case WidgetPageAction.Back:
+                _screen = AppScreen.MainMenu;
+                return null;
+            case WidgetPageAction.StartGame:
+                _state.Reset();
+                _lastStep = null;
+                _scoreRecordedForRun = false;
+                _paused = false;
+                _screen = AppScreen.Playing;
+                return null;
+            case WidgetPageAction.TogglePause:
+                if (!_state.IsGameOver)
+                {
+                    _paused = !_paused;
+                }
+
+                return null;
+            default:
+                return null;
+        }
     }
 
     private TesseraEffect? HandleOptionsKey(KeyPressed key)

@@ -14,7 +14,9 @@ internal sealed class WidgetShowcasePage
         Text = "Start",
         Description = "action widget",
         SurfaceStyle = SnakeTheme.FieldOdd,
-        LabelStyle = SnakeTheme.Title
+        LabelStyle = SnakeTheme.Title,
+        FocusedSurfaceStyle = SnakeTheme.MenuSelected,
+        FocusedLabelStyle = SnakeTheme.MenuSelected
     };
 
     private readonly Button _pauseButton = new()
@@ -22,7 +24,9 @@ internal sealed class WidgetShowcasePage
         Text = "Pause",
         Description = "command widget",
         SurfaceStyle = SnakeTheme.FieldEven,
-        LabelStyle = SnakeTheme.StatusPaused
+        LabelStyle = SnakeTheme.StatusPaused,
+        FocusedSurfaceStyle = SnakeTheme.MenuSelected,
+        FocusedLabelStyle = SnakeTheme.MenuSelected
     };
 
     private readonly Badge _difficultyBadge = new()
@@ -40,6 +44,9 @@ internal sealed class WidgetShowcasePage
         Border = BorderStyle.Ascii,
         Padding = Thickness.Symmetric(1),
         BorderStyleText = SnakeTheme.Border,
+        FocusedBorderStyleText = SnakeTheme.Title,
+        TitleStyle = SnakeTheme.Title,
+        FocusedTitleStyle = SnakeTheme.MenuSelected,
         KeyStyle = SnakeTheme.MenuHint,
         ValueStyle = SnakeTheme.Title
     };
@@ -50,6 +57,9 @@ internal sealed class WidgetShowcasePage
         Border = BorderStyle.Ascii,
         Padding = Thickness.Symmetric(1),
         BorderStyleText = SnakeTheme.Border,
+        FocusedBorderStyleText = SnakeTheme.Title,
+        TitleStyle = SnakeTheme.Title,
+        FocusedTitleStyle = SnakeTheme.MenuSelected,
         FillStyle = SnakeTheme.Body,
         TrackStyle = SnakeTheme.FieldOdd,
         LabelStyle = SnakeTheme.PanelText
@@ -60,6 +70,8 @@ internal sealed class WidgetShowcasePage
         Title = "Gauge",
         MinValue = 0,
         MaxValue = 100,
+        TitleStyle = SnakeTheme.Title,
+        FocusedTitleStyle = SnakeTheme.MenuSelected,
         ValueLabelStyle = SnakeTheme.Title
     };
 
@@ -69,6 +81,9 @@ internal sealed class WidgetShowcasePage
         Border = BorderStyle.Ascii,
         Padding = Thickness.Symmetric(1),
         BorderStyleText = SnakeTheme.Border,
+        FocusedBorderStyleText = SnakeTheme.Title,
+        TitleStyle = SnakeTheme.Title,
+        FocusedTitleStyle = SnakeTheme.MenuSelected,
         DataStyle = SnakeTheme.Title,
         MetaStyle = SnakeTheme.PanelText,
         Options = new SparklineOptions(ShowStats: true, Legend: "pace")
@@ -81,6 +96,9 @@ internal sealed class WidgetShowcasePage
         Padding = Thickness.Symmetric(1),
         PreferredKeyColumnWidth = 12,
         BorderStyleText = SnakeTheme.Border,
+        FocusedBorderStyleText = SnakeTheme.Title,
+        TitleStyle = SnakeTheme.Title,
+        FocusedTitleStyle = SnakeTheme.MenuSelected,
         KeyStyle = SnakeTheme.MenuHint,
         ValueStyle = SnakeTheme.PanelText,
         SeparatorStyle = SnakeTheme.Border,
@@ -93,14 +111,19 @@ internal sealed class WidgetShowcasePage
         Border = BorderStyle.Ascii,
         Padding = Thickness.Symmetric(1),
         BorderStyleText = SnakeTheme.Border,
+        FocusedBorderStyleText = SnakeTheme.Title,
+        TitleStyle = SnakeTheme.Title,
+        FocusedTitleStyle = SnakeTheme.MenuSelected,
         DefaultRowStyle = SnakeTheme.PanelText,
-        SelectedRowStyle = SnakeTheme.MenuSelected
+        SelectedRowStyle = SnakeTheme.MenuSelected,
+        PageSize = 6
     };
 
     private readonly Tabs _tabs = new("HUD", "Menus", "Data", "Charts")
     {
         Title = "Tabs",
-        TitleStyle = SnakeTheme.Title
+        TitleStyle = SnakeTheme.Title,
+        FocusedTitleStyle = SnakeTheme.MenuSelected
     };
 
     private readonly Label _notes = new()
@@ -120,8 +143,27 @@ internal sealed class WidgetShowcasePage
         FillStyle = SnakeTheme.StatusFill
     };
 
+    private readonly Control[] _focusOrder;
+    private string _actionMessage = "Tab changes focus. Arrows change focused lists/tabs. Enter activates buttons.";
+    private int _focusIndex;
+    private int _familiesIndex;
+    private int _inspectorIndex;
+
     public WidgetShowcasePage()
     {
+        _focusOrder =
+        [
+            _tabs,
+            _startButton,
+            _pauseButton,
+            _families,
+            _inspector,
+            _progress,
+            _gauge,
+            _sparkline,
+            _stats
+        ];
+
         _families.SetItems([
             "Action: Button",
             "Status: Badge / StatusBar",
@@ -131,47 +173,213 @@ internal sealed class WidgetShowcasePage
             "Chart: Sparkline"
         ]);
         _families.SetSelectedIndex(0);
+        FocusFirst();
     }
 
     public Screen Build(
+        ScreenContext context,
         SnakeGameState state,
         DifficultyLevel difficulty,
         IReadOnlyList<ScoreEntry> leaderboard)
     {
         Refresh(state, difficulty, leaderboard);
+        var shellWidth = Math.Min(122, Math.Max(48, context.Width - 2));
+        var shellHeight = Math.Min(34, Math.Max(22, context.Height - 2));
+        var wideLayout = shellWidth >= 96 && shellHeight >= 28;
 
         return Screen.Build(window =>
         {
-            window.Padding(1);
-            window.Header(1, _tabs);
-            window.Body(body => body.Row(row =>
+            window.Body(body => body.Center(center => center.Column(column =>
             {
-                row.Gap(1);
-                row.Weighted(1, left => left.Column(column =>
+                column.Fixed(1, _tabs);
+                column.Gap(1);
+                column.Fill(widgets =>
                 {
-                    column.Gap(1);
-                    column.Fixed(5, actions => actions.Row(actionRow =>
+                    if (wideLayout)
                     {
-                        actionRow.Gap(1);
-                        actionRow.Weighted(1, _startButton);
-                        actionRow.Weighted(1, _pauseButton);
-                    }));
-                    column.Fixed(2, _difficultyBadge);
-                    column.Fixed(5, _stats);
-                    column.Fixed(5, _progress);
-                    column.Fixed(4, _gauge);
-                }));
-                row.Weighted(1, right => right.Column(column =>
-                {
-                    column.Gap(1);
-                    column.Fixed(5, _sparkline);
-                    column.Fixed(8, _inspector);
-                    column.Fixed(8, _families);
-                    column.Fixed(4, _notes);
-                }));
-            }));
-            window.Footer(1, _footer);
+                        widgets.Row(row =>
+                        {
+                            row.Gap(1);
+                            row.Weighted(1, left => left.Column(leftColumn =>
+                            {
+                                leftColumn.Gap(1);
+                                leftColumn.Fixed(3, actions => actions.Row(actionRow =>
+                                {
+                                    actionRow.Gap(1);
+                                    actionRow.Weighted(1, _startButton);
+                                    actionRow.Weighted(1, _pauseButton);
+                                }));
+                                leftColumn.Fixed(1, _difficultyBadge);
+                                leftColumn.Fixed(5, _stats);
+                                leftColumn.Fixed(5, _progress);
+                                leftColumn.Fixed(4, _gauge);
+                            }));
+                            row.Weighted(1, right => right.Column(rightColumn =>
+                            {
+                                rightColumn.Gap(1);
+                                rightColumn.Fixed(5, _sparkline);
+                                rightColumn.Fixed(8, _inspector);
+                                rightColumn.Fixed(8, _families);
+                                rightColumn.Fixed(4, _notes);
+                            }));
+                        });
+                    }
+                    else
+                    {
+                        widgets.Column(compact =>
+                        {
+                            compact.Gap(1);
+                            compact.Fixed(3, top => top.Row(row =>
+                            {
+                                row.Gap(1);
+                                row.Weighted(1, _startButton);
+                                row.Weighted(1, _pauseButton);
+                                row.Fixed(16, _difficultyBadge);
+                            }));
+                            compact.Fixed(6, middle => middle.Row(row =>
+                            {
+                                row.Gap(1);
+                                row.Weighted(1, _stats);
+                                row.Weighted(1, _progress);
+                                row.Weighted(1, _sparkline);
+                            }));
+                            compact.Fill(bottom => bottom.Row(row =>
+                            {
+                                row.Gap(1);
+                                row.Weighted(1, _families);
+                                row.Weighted(1, _inspector);
+                                row.Weighted(1, details => details.Column(stack =>
+                                {
+                                    stack.Gap(1);
+                                    stack.Fixed(4, _gauge);
+                                    stack.Fill(_notes);
+                                }));
+                            }));
+                        });
+                    }
+                });
+                column.Fixed(1, _footer);
+            }), shellWidth, shellHeight));
         });
+    }
+
+    public void FocusFirst()
+    {
+        _focusIndex = 0;
+        _focusOrder[_focusIndex].RequestFocus();
+    }
+
+    public WidgetPageAction HandleKey(KeyPressed key)
+    {
+        if (key.Is(Key.Escape) || key.IsCharacter('b') || key.IsCharacter('q', ModifierKeys.Ctrl))
+        {
+            return WidgetPageAction.Back;
+        }
+
+        if (key.Is(Key.Tab))
+        {
+            FocusNext();
+            return WidgetPageAction.None;
+        }
+
+        if (key.IsCharacter('['))
+        {
+            FocusPrevious();
+            return WidgetPageAction.None;
+        }
+
+        if (FocusedControl == _tabs && (key.Is(Key.Left) || key.IsCharacter('a')))
+        {
+            SelectTab(-1);
+            return WidgetPageAction.None;
+        }
+
+        if (FocusedControl == _tabs && (key.Is(Key.Right) || key.IsCharacter('d')))
+        {
+            SelectTab(1);
+            return WidgetPageAction.None;
+        }
+
+        if (FocusedControl == _families && (key.Is(Key.Up) || key.IsCharacter('w')))
+        {
+            MoveListSelection(-1);
+            return WidgetPageAction.None;
+        }
+
+        if (FocusedControl == _families && (key.Is(Key.Down) || key.IsCharacter('s')))
+        {
+            MoveListSelection(1);
+            return WidgetPageAction.None;
+        }
+
+        if (FocusedControl == _inspector && (key.Is(Key.Up) || key.IsCharacter('w')))
+        {
+            MoveInspectorSelection(-1);
+            return WidgetPageAction.None;
+        }
+
+        if (FocusedControl == _inspector && (key.Is(Key.Down) || key.IsCharacter('s')))
+        {
+            MoveInspectorSelection(1);
+            return WidgetPageAction.None;
+        }
+
+        if (IsActivation(key) && FocusedControl == _startButton)
+        {
+            _actionMessage = "Start Game activated from a Tessera Button.";
+            return WidgetPageAction.StartGame;
+        }
+
+        if (IsActivation(key) && FocusedControl == _pauseButton)
+        {
+            _actionMessage = "Pause toggled from a Tessera Button.";
+            return WidgetPageAction.TogglePause;
+        }
+
+        return WidgetPageAction.None;
+    }
+
+    private void FocusNext()
+    {
+        _focusIndex = (_focusIndex + 1) % _focusOrder.Length;
+        _focusOrder[_focusIndex].RequestFocus();
+    }
+
+    private void FocusPrevious()
+    {
+        _focusIndex = (_focusIndex - 1 + _focusOrder.Length) % _focusOrder.Length;
+        _focusOrder[_focusIndex].RequestFocus();
+    }
+
+    private Control FocusedControl => _focusOrder[_focusIndex];
+
+    private void SelectTab(int delta)
+    {
+        const int tabCount = 4;
+        var next = (_tabs.SelectedIndex + delta + tabCount) % tabCount;
+        _tabs.SetSelectedIndex(next);
+        _actionMessage = $"Tabs selected: {_tabs.SelectedIndex + 1}/{tabCount}.";
+    }
+
+    private void MoveListSelection(int delta)
+    {
+        const int itemCount = 6;
+        _familiesIndex = (_familiesIndex + delta + itemCount) % itemCount;
+        _families.SetSelectedIndex(_familiesIndex);
+        _actionMessage = $"ListView selected: {_families.SelectedIndex + 1}/{itemCount}.";
+    }
+
+    private void MoveInspectorSelection(int delta)
+    {
+        const int itemCount = 5;
+        _inspectorIndex = (_inspectorIndex + delta + itemCount) % itemCount;
+        _inspector.SetSelectedIndex(_inspectorIndex);
+        _actionMessage = $"KeyValueList selected: {_inspector.SelectedIndex + 1}/{itemCount}.";
+    }
+
+    private static bool IsActivation(KeyPressed key)
+    {
+        return key.Is(Key.Enter) || key.IsCharacter(' ');
     }
 
     private void Refresh(
@@ -208,9 +416,12 @@ internal sealed class WidgetShowcasePage
             new KeyValueListEntry("Food", $"{state.Food.X}, {state.Food.Y}"),
             new KeyValueListEntry("Top scores", $"{leaderboard.Count}/10")
         ]);
-        _notes.Text = "Built-in Tessera widgets embedded in the game shell.\nPress Escape or B to return.";
+        _families.SetSelectedIndex(_familiesIndex);
+        _inspector.SetSelectedIndex(_inspectorIndex);
+
+        _notes.Text = $"{_actionMessage}\nEscape/B returns. [ moves focus backward.";
         _footer.LeftText = $" {difficulty} widget lab ";
-        _footer.RightText = "Escape/B returns";
+        _footer.RightText = "Tab focus | Enter activate | arrows move";
     }
 
     private static double[] BuildSamples(int score, int length, DifficultyLevel difficulty)
@@ -230,4 +441,12 @@ internal sealed class WidgetShowcasePage
 
         return samples;
     }
+}
+
+internal enum WidgetPageAction
+{
+    None,
+    Back,
+    StartGame,
+    TogglePause
 }
