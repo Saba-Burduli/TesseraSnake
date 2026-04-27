@@ -9,7 +9,7 @@ internal sealed class LeaderboardPage
 {
     private readonly Label _content = new()
     {
-        Border = BorderStyle.Rounded,
+        Border = BorderStyle.Ascii,
         Title = " Leaderboard ",
         Padding = Thickness.Symmetric(2),
         TextStyle = SnakeTheme.PanelText,

@@ -8,7 +8,7 @@ internal sealed class AboutPage
 {
     private readonly Label _content = new()
     {
-        Border = BorderStyle.Rounded,
+        Border = BorderStyle.Ascii,
         Title = " About Developer ",
         Padding = Thickness.Symmetric(2),
         TextStyle = SnakeTheme.PanelText,

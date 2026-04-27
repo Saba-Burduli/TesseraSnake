@@ -31,7 +31,7 @@ internal sealed class MainMenu : Control
             return;
         }
 
-        canvas.DrawBox(clipped, SnakeTheme.Title.Render(" Main Menu "), BorderStyle.Rounded, SnakeTheme.Border);
+        canvas.DrawBox(clipped, SnakeTheme.Title.Render(" Main Menu "), BorderStyle.Ascii, SnakeTheme.Border);
         var content = clipped.Inset(2, 1);
         if (content.IsEmpty)
         {

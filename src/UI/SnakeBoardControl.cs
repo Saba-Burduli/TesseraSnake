@@ -12,7 +12,7 @@ internal sealed class SnakeBoardControl : Control
 
     public SnakeGameState? State { get; set; }
 
-    public BorderStyle Border { get; set; } = BorderStyle.Rounded;
+    public BorderStyle Border { get; set; } = BorderStyle.Ascii;
 
     public TesseraStyle BorderStyleText { get; set; } = SnakeTheme.Border;
 

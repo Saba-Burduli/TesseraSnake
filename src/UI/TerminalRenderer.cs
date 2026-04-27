@@ -27,7 +27,7 @@ internal sealed class TerminalRenderer
 
     private readonly Label _help = new()
     {
-        Border = BorderStyle.Rounded,
+        Border = BorderStyle.Ascii,
         Title = " controls ",
         Padding = Thickness.Symmetric(1),
         TextStyle = SnakeTheme.PanelText,
@@ -36,7 +36,7 @@ internal sealed class TerminalRenderer
 
     private readonly Label _stats = new()
     {
-        Border = BorderStyle.Rounded,
+        Border = BorderStyle.Ascii,
         Title = " run ",
         Padding = Thickness.Symmetric(1),
         TextStyle = SnakeTheme.PanelText,

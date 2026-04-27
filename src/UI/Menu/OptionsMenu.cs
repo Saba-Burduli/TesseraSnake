@@ -49,7 +49,7 @@ internal sealed class OptionsMenu : Control
             return;
         }
 
-        canvas.DrawBox(clipped, SnakeTheme.Title.Render(" Options "), BorderStyle.Rounded, SnakeTheme.Border);
+        canvas.DrawBox(clipped, SnakeTheme.Title.Render(" Options "), BorderStyle.Ascii, SnakeTheme.Border);
         var content = clipped.Inset(2, 1);
         if (content.IsEmpty)
         {
