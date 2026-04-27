@@ -17,6 +17,7 @@ internal sealed class TerminalRenderer
     private readonly OptionsMenu _optionsMenu = new();
     private readonly AboutPage _aboutPage = new();
     private readonly LeaderboardPage _leaderboardPage = new();
+    private readonly WidgetShowcasePage _widgetShowcase = new();
 
     private readonly Label _header = new()
     {
@@ -78,6 +79,14 @@ internal sealed class TerminalRenderer
     public Screen BuildLeaderboard(IReadOnlyList<ScoreEntry> entries)
     {
         return _leaderboardPage.Build(entries);
+    }
+
+    public Screen BuildWidgets(
+        SnakeGameState state,
+        DifficultyLevel difficulty,
+        IReadOnlyList<ScoreEntry> entries)
+    {
+        return _widgetShowcase.Build(state, difficulty, entries);
     }
 
     public Screen Build(SnakeGameState state, ScreenContext context, DifficultyLevel difficulty, bool paused)

@@ -7,7 +7,7 @@ namespace TesseraSnake.UI.Menu;
 
 internal sealed class MainMenu : Control
 {
-    private readonly string[] _items = ["Start Game", "Options", "About Developer", "Exit"];
+    private readonly string[] _items = ["Start Game", "Options", "Tessera Widgets", "About Developer", "Exit"];
 
     public int SelectedIndex { get; private set; }
 

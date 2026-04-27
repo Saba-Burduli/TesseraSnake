@@ -52,6 +52,7 @@ internal sealed class GameLoop : TesseraApp
             AppScreen.MainMenu => _renderer.BuildMainMenu(),
             AppScreen.Options => _renderer.BuildOptions(),
             AppScreen.Leaderboard => _renderer.BuildLeaderboard(_leaderboard.Entries),
+            AppScreen.Widgets => _renderer.BuildWidgets(_state, _difficulty, _leaderboard.Entries),
             AppScreen.About => _renderer.BuildAbout(),
             _ => _renderer.Build(_state, context, _difficulty, _paused)
         };
@@ -68,6 +69,7 @@ internal sealed class GameLoop : TesseraApp
         _ = new TerminalRenderer(menu).BuildMainMenu();
         _ = new TerminalRenderer(menu).Build(state, new ScreenContext { Width = 80, Height = 30 },
             DifficultyLevel.Medium, paused: false);
+        _ = new TerminalRenderer(menu).BuildWidgets(state, DifficultyLevel.Medium, []);
 
         var tempPath = Path.Combine(Path.GetTempPath(), $"tessera-snake-{Guid.NewGuid():N}.json");
         var leaderboard = new LeaderboardService(tempPath);
@@ -110,7 +112,7 @@ internal sealed class GameLoop : TesseraApp
         {
             AppScreen.MainMenu => HandleMainMenuKey(key),
             AppScreen.Options => HandleOptionsKey(key),
-            AppScreen.Leaderboard or AppScreen.About => HandlePageKey(key),
+            AppScreen.Leaderboard or AppScreen.Widgets or AppScreen.About => HandlePageKey(key),
             _ => HandleGameKey(key)
         };
     }
@@ -156,6 +158,9 @@ internal sealed class GameLoop : TesseraApp
             case "Options":
                 _renderer.OptionsMenu.SelectDifficulty(_difficulty);
                 _screen = AppScreen.Options;
+                return null;
+            case "Tessera Widgets":
+                _screen = AppScreen.Widgets;
                 return null;
             case "About Developer":
                 _screen = AppScreen.About;
